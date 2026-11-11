@@ -179,7 +179,15 @@ void QGCApplication::setLanguage()
 
     QLocale::Language possibleLocale = AppSettings::_qLocaleLanguageEarlyAccess();
     if (possibleLocale != QLocale::AnyLanguage) {
-        _locale = QLocale(possibleLocale);
+        _locale = (possibleLocale == QLocale::Chinese)
+                      ? QLocale(QLocale::Chinese, QLocale::China)
+                      : QLocale(possibleLocale);
+    } else if (_locale.language() == QLocale::Chinese && _locale.territory() == QLocale::Taiwan) {
+        _locale = QLocale(QLocale::Chinese, QLocale::Taiwan);
+    } else {
+        // Default "System" locale to Simplified Chinese (zh_CN) so iOS (zh-Hans) and
+        // Android controllers such as DJI RC Plus always load the zh_CN translation catalog.
+        _locale = QLocale(QLocale::Chinese, QLocale::China);
     }
     //-- We have specific fonts for Korean
     if (_locale == QLocale::Korean) {

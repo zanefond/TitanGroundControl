@@ -111,5 +111,12 @@ FirstRunPrompt {
                 }
             }
         }
+
+        QGCButton {
+            Layout.fillWidth: true
+            primary: true
+            text: qsTr("OK")
+            onClicked: _accept()
+        }
     }
 }

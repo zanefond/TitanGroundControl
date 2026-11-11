@@ -73,6 +73,10 @@ def build_matrix(is_pr: bool) -> list[Leg]:
     legs = [LINUX_JOB, MAC_JOB, WINDOWS_JOB, LINUX_EMULATOR_JOB]
     if is_pr:
         legs.remove(WINDOWS_JOB)
+    # Fork: only build the single linux-hosted arm64-v8a APK (DJI RC Plus / modern Android devices)
+    # unless ANDROID_FULL_MATRIX=1 is set. Saves ~3 extra runner legs per build.
+    if not parse_bool(os.environ.get("ANDROID_FULL_MATRIX", "0")):
+        return [{**LINUX_JOB, "android_abis": "arm64-v8a", "artifact_abi_suffix": "arm64-v8a"}]
     matrix = []
     for leg in legs:
         if leg["emulator"]:

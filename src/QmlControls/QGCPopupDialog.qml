@@ -52,8 +52,18 @@ Popup {
     property bool   preventClose:           false
     property bool   bypassNavigationCheck:  false
 
-    property real maxContentAvailableWidth:    mainWindow.width - _contentMargin * 6
-    property real maxContentAvailableHeight:   mainWindow.height - titleRowLayout.height - _contentMargin * 7
+    property real maxContentAvailableWidth:    mainWindow.width - _safeLeft - _safeRight - _contentMargin * 6
+    property real maxContentAvailableHeight:   mainWindow.height - _safeTop - _safeBottom - titleRowLayout.height - _contentMargin * 7
+
+    // Keep the dialog (and especially the title row accept/close buttons) clear of display cutouts,
+    // notches, status bars and rounded screen corners. MainWindow zeroes its safe-area padding to draw
+    // edge-to-edge, so dialogs have to honor the insets themselves. On mobile a small minimum inset is
+    // enforced as a fallback for devices/ROMs which under-report their safe area (e.g. DJI RC Plus).
+    readonly property real _mobileMinInset: ScreenTools.isMobile ? ScreenTools.defaultFontPixelHeight : 0
+    readonly property real _safeTop:        Math.max(safeAreaProbe.SafeArea.margins.top,    _mobileMinInset)
+    readonly property real _safeBottom:     Math.max(safeAreaProbe.SafeArea.margins.bottom, _mobileMinInset)
+    readonly property real _safeLeft:       Math.max(safeAreaProbe.SafeArea.margins.left,   _mobileMinInset)
+    readonly property real _safeRight:      Math.max(safeAreaProbe.SafeArea.margins.right,  _mobileMinInset)
 
     readonly property real headerMinWidth: titleLabel.implicitWidth + rejectButton.width + acceptButton.width + titleRowLayout.spacing * 2
 
@@ -198,6 +208,16 @@ Popup {
         acceptButton.enabled = false
     }
 
+    // Invisible full-size item used only to query the window safe-area insets
+    Item {
+        id:             safeAreaProbe
+        // Cover the whole popup (which covers the whole window), not just the padded content area
+        x:              -root.leftPadding
+        y:              -root.topPadding
+        width:          root.width
+        height:         root.height
+    }
+
     Rectangle {
         x:              mainLayout.x - _contentMargin
         y:              mainLayout.y - _contentMargin
@@ -212,6 +232,8 @@ Popup {
     ColumnLayout {
         id:                 mainLayout
         anchors.centerIn:   parent
+        anchors.horizontalCenterOffset: (_safeLeft - _safeRight) / 2
+        anchors.verticalCenterOffset:   (_safeTop - _safeBottom) / 2
         x:                  _contentMargin
         y:                  _contentMargin
         spacing:            _contentMargin
@@ -254,8 +276,8 @@ Popup {
 
             property real totalContentWidth:    dialogContentParent.childrenRect.width + _contentMargin * 2
             property real totalContentHeight:   dialogContentParent.childrenRect.height + _contentMargin * 2
-            property real maxAvailableWidth:    mainWindow.width - _contentMargin * 4
-            property real maxAvailableHeight:   mainWindow.height - titleRowLayout.height - _contentMargin * 5
+            property real maxAvailableWidth:    mainWindow.width - _safeLeft - _safeRight - _contentMargin * 4
+            property real maxAvailableHeight:   mainWindow.height - _safeTop - _safeBottom - titleRowLayout.height - _contentMargin * 5
 
             QGCFlickable {
                 anchors.margins:    _contentMargin
