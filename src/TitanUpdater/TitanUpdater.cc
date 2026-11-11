@@ -337,6 +337,7 @@ bool TitanUpdater::install()
 
 bool TitanUpdater::_installAppImage()
 {
+#if QT_CONFIG(process)
     const QString target = qEnvironmentVariable("APPIMAGE");
     QTemporaryDir unpacked;
     if (!unpacked.isValid() || !QGCCompression::extractArchive(_downloadPath(), unpacked.path())) {
@@ -371,6 +372,10 @@ bool TitanUpdater::_installAppImage()
         return false;
     }
     return true;
+#else
+    // No process support (e.g. iOS sandbox): AppImage self-update is not possible
+    return false;
+#endif
 }
 
 void TitanUpdater::cancel()
